@@ -377,26 +377,26 @@ let candidates = [
 
 let nominations = []; // Stores { studentEmail, candidateId, role }
 
-// Default route
+// ✅ Default route to check server status
 app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
 
-// Get all candidates
+// ✅ Get all candidates
 app.get("/candidates", (req, res) => {
   res.json(candidates);
 });
 
-// Get all nominations
+// ✅ Get all nominations
 app.get("/nominations", (req, res) => {
   res.json(nominations);
 });
 
-// Nominate a candidate
+// ✅ Nominate a candidate
 app.post("/nominate", (req, res) => {
   const { studentEmail, candidateId } = req.body;
 
-  // Validate student email
+  // Validate student email format
   if (!studentEmail || !studentEmail.endsWith("@alustudent.com")) {
     return res.status(400).json({ error: "Only @alustudent.com emails are allowed" });
   }
@@ -407,7 +407,7 @@ app.post("/nominate", (req, res) => {
     return res.status(404).json({ error: "Candidate not found" });
   }
 
-  // Check if student already nominated for this role
+  // Check if the student already nominated someone for this role
   const alreadyNominated = nominations.find(
     n => n.studentEmail === studentEmail && n.role === candidate.role
   );
@@ -418,13 +418,28 @@ app.post("/nominate", (req, res) => {
     });
   }
 
-  // Store the nomination
+  // Store nomination
   nominations.push({ studentEmail, candidateId, role: candidate.role });
 
   return res.json({ message: "Nomination successful" });
 });
 
-// Start the server
+// ✅ Reset nominations when email is changed
+app.post("/reset", (req, res) => {
+  const { studentEmail } = req.body;
+
+  // Validate email format
+  if (!studentEmail || !studentEmail.endsWith("@alustudent.com")) {
+    return res.status(400).json({ error: "Invalid email format" });
+  }
+
+  // Remove previous nominations linked to this student email
+  nominations = nominations.filter(n => n.studentEmail !== studentEmail);
+
+  return res.json({ message: "Your nominations have been reset" });
+});
+
+// ✅ Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
